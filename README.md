@@ -263,6 +263,7 @@ Real payment provider integration
 QR code ticket verification
 Database migrations with Flyway
 Integration and end-to-end tests
+
 Author
 
 Bekir Yıldız
