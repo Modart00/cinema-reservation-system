@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -27,4 +28,13 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
     private LocalDate createdAt;
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
+    private VerificationToken token;
+
+    private String refreshToken;
+    private LocalDateTime refreshTokenExpiryDate;
+
+    private boolean enabled;
 }
