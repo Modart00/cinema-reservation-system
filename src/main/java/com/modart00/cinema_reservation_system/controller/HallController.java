@@ -44,4 +44,10 @@ public class HallController {
         hallService.deleteHall(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/api/admin/halls/{id}/generate-seats")
+    public ResponseEntity<Void> generateSeats(@PathVariable Long id) {
+        hallService.generateStandardSeats(id);
+        return ResponseEntity.noContent().build();
+    }
 }

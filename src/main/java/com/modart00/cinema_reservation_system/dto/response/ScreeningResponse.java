@@ -5,9 +5,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
 @Data
-public class ScreeningResponse {
+public class ScreeningResponse implements Serializable {
     private Long id;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

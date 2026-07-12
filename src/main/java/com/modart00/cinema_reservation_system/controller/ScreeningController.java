@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class ScreeningController {
@@ -24,6 +26,11 @@ public class ScreeningController {
     @GetMapping("/api/screenings")
     public ResponseEntity<Page<ScreeningResponse>> getAllScreenings(Pageable pageable) {
         return ResponseEntity.ok(screeningService.getAllScreenings(pageable));
+    }
+
+    @GetMapping("/api/screenings/{id}/occupied-seat-ids")
+    public ResponseEntity<List<Long>> getOccupiedSeatIds(@PathVariable Long id) {
+        return ResponseEntity.ok(screeningService.getOccupiedSeatIds(id));
     }
 
     @PostMapping("/api/admin/screenings")

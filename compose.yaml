@@ -1,10 +1,86 @@
 services:
   mysql:
-    image: 'mysql:latest'
+    image: mysql:8.0
+    container_name: cinema-mysql
+    restart: unless-stopped
     environment:
-      - 'MYSQL_DATABASE=mydatabase'
-      - 'MYSQL_PASSWORD=secret'
-      - 'MYSQL_ROOT_PASSWORD=verysecret'
-      - 'MYSQL_USER=myuser'
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: cinema_db
     ports:
-      - '3306'
+      - "3307:3306"
+    volumes:
+      - cinema_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: cinema-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - cinema_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cinema-backend:latest
+    container_name: cinema-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/cinema_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+  frontend-server:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: cinema-frontend-server:latest
+    container_name: cinema-frontend-server
+    restart: unless-stopped
+    depends_on:
+      - backend
+    expose:
+      - "3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+
+  frontend:
+    image: nginx:1.27-alpine
+    container_name: cinema-frontend
+    restart: unless-stopped
+    depends_on:
+      - frontend-server
+      - backend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  cinema_mysql_data:
+  cinema_redis_data:

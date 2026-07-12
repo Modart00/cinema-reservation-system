@@ -11,4 +11,5 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     boolean existsByReservationId(Long reservationId);
     Page<Ticket> findAllByReservationUserId(Long userId, Pageable pageable);
     Optional<Ticket> findByIdAndReservationUserId(Long id, Long userId);
+    void deleteByReservationId(Long reservationId);
 }

@@ -3,10 +3,15 @@ package com.modart00.cinema_reservation_system.service;
 import com.modart00.cinema_reservation_system.dto.request.MovieRequest;
 import com.modart00.cinema_reservation_system.dto.response.MovieResponse;
 import com.modart00.cinema_reservation_system.entity.Movie;
+import com.modart00.cinema_reservation_system.entity.Screening;
 import com.modart00.cinema_reservation_system.exception.ResourceNotFoundException;
 import com.modart00.cinema_reservation_system.repository.MovieRepository;
+import com.modart00.cinema_reservation_system.repository.ScreeningRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,8 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MovieService {
     private final MovieRepository movieRepository;
+    private final ScreeningRepository screeningRepository;
+    private final ScreeningService screeningService;
 
     @Transactional
+    @CacheEvict(value = "movieLists", allEntries = true)
     public MovieResponse createMovie(MovieRequest request) {
         log.info("Admin attempting to create movie: {}", request.getTitle());
         Movie movie = new Movie();
@@ -28,6 +36,7 @@ public class MovieService {
         return toResponse(savedMovie);
     }
 
+    @Cacheable(value = "movies", key = "#id")
     public MovieResponse getMovieById(Long id) {
         log.info("User requested movie with ID: {}", id);
         Movie movie = movieRepository.findById(id)
@@ -35,12 +44,17 @@ public class MovieService {
         return toResponse(movie);
     }
 
+    @Cacheable(value = "movieLists", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<MovieResponse> getAllMovies(Pageable pageable) {
         log.info("User requested movie list");
         return movieRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "movies", key = "#id"),
+            @CacheEvict(value = "movieLists", allEntries = true)
+    })
     public MovieResponse updateMovie(Long id, MovieRequest request) {
         log.info("Admin attempting to update movie with ID: {}", id);
         Movie movie = movieRepository.findById(id)
@@ -51,10 +65,17 @@ public class MovieService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "movies", key = "#id"),
+            @CacheEvict(value = "movieLists", allEntries = true)
+    })
     public void deleteMovie(Long id) {
         log.info("Admin attempting to delete movie with ID: {}", id);
         Movie movie = movieRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Film bulunamadı"));
+        for (Screening screening : screeningRepository.findAllByMovieId(id)) {
+            screeningService.deleteScreening(screening.getId());
+        }
         movieRepository.delete(movie);
         log.info("Admin deleted movie with ID: {}", id);
     }

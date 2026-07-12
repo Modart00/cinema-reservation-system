@@ -4,9 +4,10 @@ import com.modart00.cinema_reservation_system.entity.MovieStatus;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
 @Data
-public class MovieResponse {
+public class MovieResponse implements Serializable {
     private Long id;
     private String title;
     private String description;
