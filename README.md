@@ -314,7 +314,11 @@ GitHub: @Modart00
 
 ## Reservation
 
-![Reservation](docs/screenshots/Reservation.png)(docs/screenshots/Seats-Taken.png)
+![Reservation](docs/screenshots/Reservation.png)
+
+## Reserved Seats
+
+![Reserved Seats](docs/screenshots/Seats-Taken.png)
 
 ## Seat Types
 
