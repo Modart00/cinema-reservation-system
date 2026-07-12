@@ -30,6 +30,7 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(user.getEmail())
+                .claim("tokenVersion", user.getTokenVersion())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
                 .signWith(secretKey)
@@ -67,7 +68,11 @@ public class JwtService {
 
     public boolean validateToken(String token,User user){
         String email = extractEmail(token);
-        if (isTokenExpired(token) || !email.equals(user.getEmail())){
+        Integer tokenVersion = extractAllClaims(token).get("tokenVersion", Integer.class);
+        if (isTokenExpired(token)
+                || !email.equals(user.getEmail())
+                || tokenVersion == null
+                || tokenVersion != user.getTokenVersion()){
             return false;
         } else return true;
     }

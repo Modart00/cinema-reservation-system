@@ -30,11 +30,12 @@ public class User {
     private LocalDate createdAt;
 
     @ToString.Exclude
-    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private VerificationToken token;
 
     private String refreshToken;
     private LocalDateTime refreshTokenExpiryDate;
+    private int tokenVersion;
 
     private boolean enabled;
 }

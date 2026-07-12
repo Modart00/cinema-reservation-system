@@ -10,6 +10,7 @@ import com.modart00.cinema_reservation_system.entity.VerificationToken;
 import com.modart00.cinema_reservation_system.exception.AccountNotVerifiedException;
 import com.modart00.cinema_reservation_system.repository.UserRepository;
 import com.modart00.cinema_reservation_system.security.JwtService;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
 
+    @Transactional
     public RegisterResponse register(RegisterRequest request){
         log.info("register attempt for email {}",request.getEmail());
 
@@ -37,7 +39,7 @@ public class AuthService {
             throw new RuntimeException("Bu email sistemde kayıtlı");
         }
 
-        if (userRepository.existsByUserName(request.getUsername())){
+        if (userRepository.existsByUsername(request.getUsername())){
             log.warn("Duplicate username registration attempt: {}" ,request.getUsername());
             throw new RuntimeException("Bu kullanıcı adı sisteme kayıtlı");
         }
@@ -59,29 +61,41 @@ public class AuthService {
         return response;
     }
 
-    public LoginResponse login(LoginRequest request){
-        log.info("login attempt for {}",request.getEmail());
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> {
-            log.warn("User with email {} not found!", request.getEmail());
-           return new RuntimeException("Kullanıcı bulunamadı");
-        });
-        String attemptedPassword = passwordEncoder.encode(request.getPassword());
-        String attemptedEmail = request.getEmail();
+    public LoginResponse login(LoginRequest request) {
+        log.info("Login attempt for {}", request.getEmail());
 
-        if (!user.getEmail().equals(attemptedEmail) || !user.getPassword().equals(attemptedPassword)){
-            log.warn("Invalid credentials for {}",request.getEmail());
-            throw new RuntimeException("Kullanıcı adı veya şifre hatalı, lütfen tekrar deneyin");
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> {
+                    log.warn("Invalid credentials for {}", request.getEmail());
+                    return new RuntimeException(
+                            "Email veya şifre hatalı, lütfen tekrar deneyin"
+                    );
+                });
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            log.warn("Invalid credentials for {}", request.getEmail());
+            throw new RuntimeException(
+                    "Email veya şifre hatalı, lütfen tekrar deneyin"
+            );
         }
-        if (user.isEnabled() == false) {
-            log.warn("Account not verified for {}",request.getEmail());
-            throw new AccountNotVerifiedException("Hesabınız doğrulanmadı, lütfen hesabınızı doğrulayınız.");
+
+        if (!user.isEnabled()) {
+            log.warn("Account not verified for {}", request.getEmail());
+            throw new AccountNotVerifiedException(
+                    "Hesabınız doğrulanmadı, lütfen hesabınızı doğrulayınız."
+            );
         }
 
         String accessToken = jwtService.generateToken(user);
         String refreshToken = UUID.randomUUID().toString();
 
-        return new LoginResponse(accessToken,refreshToken);
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpiryDate(LocalDateTime.now().plusDays(7));
+        userRepository.save(user);
 
+        log.info("User {} logged in successfully", user.getEmail());
+
+        return new LoginResponse(accessToken, refreshToken);
     }
 
     public LoginResponse refreshToken(String refreshToken){
