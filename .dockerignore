@@ -1,0 +1,8 @@
+.git
+.idea
+.codex
+.agents
+.env
+frontend
+target
+*.iml
