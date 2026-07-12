@@ -278,10 +278,6 @@ GitHub: @Modart00
 
 ![Movies](docs/screenshots/Movies.png)
 
-## Seat Selection
-
-![Seat Selection](docs/screenshots/Reservation.png)
-
 ## Tickets
 
 ![Tickets](docs/screenshots/Tickets.png)
