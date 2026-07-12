@@ -174,26 +174,7 @@ Access Token + Refresh Token
 Protected requests use the following header:
 
 Authorization: Bearer <access-token>
-Screenshots
-Main Page
-
-Movies
-
-Seat Selection
-
-Reserved Seats
-
-Seat Types
-
-Tickets
-
-Profile
-
-Login
-
-Registration
-
-Email Verification
+```
 
 Running the Project with Docker
 1. Clone the repository
