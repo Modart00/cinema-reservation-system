@@ -1,26 +1,36 @@
 package com.modart00.cinema_reservation_system.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Reservation {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String reservationCode;
-    private ReservationStatus status;
-    private LocalDate createdAt;
-    private LocalDate expiresAt;
-    private double totalPrice;
 
-    @ManyToOne
+    @Column(nullable = false, unique = true)
+    private String reservationCode;
+
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status;
+    private LocalDateTime createdAt;
+    private LocalDateTime expiresAt;
+    private BigDecimal totalPrice;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "screening_id", nullable = false)
     private Screening screening;
 }

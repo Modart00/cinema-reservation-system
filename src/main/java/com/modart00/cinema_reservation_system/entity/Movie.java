@@ -1,15 +1,19 @@
 package com.modart00.cinema_reservation_system.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Movie {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     private String description;
@@ -18,5 +22,6 @@ public class Movie {
     private int ageRestriction;
     private LocalDate releaseDate;
     private String posterUrl;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private MovieStatus status;
 }

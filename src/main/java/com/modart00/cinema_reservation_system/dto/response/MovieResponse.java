@@ -1,5 +1,6 @@
 package com.modart00.cinema_reservation_system.dto.response;
 
+import com.modart00.cinema_reservation_system.entity.MovieStatus;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -14,5 +15,5 @@ public class MovieResponse {
     private int ageRestriction;
     private LocalDate releaseDate;
     private String posterUrl;
-    private String status;
+    private MovieStatus status;
 }
