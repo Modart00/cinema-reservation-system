@@ -2,6 +2,7 @@ package com.modart00.cinema_reservation_system.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,6 +22,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiErrorResponse> handleConflict(ConflictException exception) {
         return response(HttpStatus.CONFLICT, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation() {
+        return response(
+                HttpStatus.CONFLICT,
+                "İşlem mevcut kayıtlarla çakıştığı için tamamlanamadı",
+                Map.of()
+        );
     }
 
     @ExceptionHandler(InvalidRequestException.class)
